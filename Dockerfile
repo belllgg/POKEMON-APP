@@ -2,10 +2,10 @@
 FROM node:16-alpine AS frontend-builder
 # Configurar directorio de trabajo
 WORKDIR /app
-# Copiar archivos de dependencias
-COPY frontend/package.json frontend/package-lock.json ./
-# Instalar dependencias
-RUN npm ci
+# Copiar solo el package.json primero (sin package-lock.json)
+COPY frontend/package.json ./
+# Instalar dependencias sin requerer package-lock.json
+RUN npm install
 # Copiar el código fuente
 COPY frontend/ ./
 # Construir la aplicación
