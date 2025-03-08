@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pokemon
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  backend:
+    build: ./backend
+    ports:
+      - "80:80"
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_NAME: pokemon
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      REACT_APP_API_URL: http://localhost:80
+
+volumes:
+  postgres_data:

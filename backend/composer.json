@@ -1,0 +1,18 @@
+{
+    "name": "your-name/pokemon-app",
+    "description": "Pokemon API Application",
+    "type": "project",
+    "require": {
+        "guzzlehttp/guzzle": "^7.9",
+        "vlucas/phpdotenv": "^5.6"
+    },
+    "authors": [
+        {
+            "name": "Tu Nombre",
+            "email": "tu@email.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^12.0"
+    }
+}
