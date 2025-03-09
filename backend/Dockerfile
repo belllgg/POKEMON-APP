@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.3-apache
 
 # Instalar extensiones de PHP necesarias
 RUN apt-get update && apt-get install -y \
@@ -8,39 +8,31 @@ RUN apt-get update && apt-get install -y \
 # Activar mod_rewrite para Apache
 RUN a2enmod rewrite
 
+# Copiar archivos del proyecto
+WORKDIR /var/www/html
+COPY . /var/www/html/
+
 # 🔥 SOLUCIÓN: Copiar `.htaccess` explícitamente a la raíz
 COPY .htaccess /var/www/html/.htaccess
-
-# Configurar directorio de trabajo
-WORKDIR /var/www/html
-
-# Copiar archivos del proyecto
-COPY . /var/www/html/
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Instalar dependencias
-RUN composer install --no-interaction --no-dev --optimize-autoloader
+# 🔥 SOLUCIÓN: Crear el directorio faltante antes de ejecutar composer install
+RUN mkdir -p /var/www/html/vendor/symfony/polyfill-php80/Resources/stubs
 
-# Crear archivo .env con credenciales
-RUN touch .env
-RUN echo "DB_HOST=postgres" >> .env
-RUN echo "DB_NAME=pokemon" >> .env
-RUN echo "DB_USER=postgres" >> .env
-RUN echo "DB_PASSWORD=postgres" >> .env
+# Instalar dependencias sin verificar requisitos de plataforma
+RUN composer install --no-interaction --no-dev --optimize-autoloader --ignore-platform-reqs
 
-# Ajustar permisos
-RUN chown -R www-data:www-data /var/www/html
+# 🔥 SOLUCIÓN: Ajustar permisos para evitar problemas de acceso
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
 
 # 🔥 SOLUCIÓN: Asegurar que Apache use el DocumentRoot correcto
 RUN sed -i 's|DocumentRoot /var/www/html/public|DocumentRoot /var/www/html|' /etc/apache2/sites-available/000-default.conf
 
-# 🔥 SOLUCIÓN: Reiniciar Apache después de modificar configuraciones
-RUN service apache2 restart
-
 # Exponer puerto 80
 EXPOSE 80
 
-# 🔥 SOLUCIÓN: Asegurar que Apache se mantenga ejecutándose
+# Iniciar Apache
 CMD ["apache2-foreground"]
